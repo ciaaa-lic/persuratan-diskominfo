@@ -1,0 +1,35 @@
+CREATE TABLE IF NOT EXISTS `hari_libur_nasional` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `tanggal` date NOT NULL,
+  `keterangan` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_tanggal_libur` (`tanggal`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `hari_libur_nasional` (`tanggal`, `keterangan`) VALUES
+('2026-01-01', 'Tahun Baru 2026 Masehi'),
+('2026-01-16', 'Isra Mikraj Nabi Muhammad SAW'),
+('2026-02-16', 'Cuti Bersama Tahun Baru Imlek'),
+('2026-02-17', 'Tahun Baru Imlek 2577 Kongzili'),
+('2026-03-18', 'Cuti Bersama Hari Suci Nyepi'),
+('2026-03-19', 'Hari Suci Nyepi (Tahun Baru Saka 1948)'),
+('2026-03-20', 'Cuti Bersama Idul Fitri 1447 H'),
+('2026-03-21', 'Hari Raya Idul Fitri 1447 Hijriah'),
+('2026-03-22', 'Hari Raya Idul Fitri 1447 Hijriah'),
+('2026-03-23', 'Cuti Bersama Idul Fitri 1447 H'),
+('2026-03-24', 'Cuti Bersama Idul Fitri 1447 H'),
+('2026-04-03', 'Wafat Yesus Kristus'),
+('2026-04-05', 'Kebangkitan Yesus Kristus (Paskah)'),
+('2026-05-01', 'Hari Buruh Internasional'),
+('2026-05-14', 'Kenaikan Yesus Kristus'),
+('2026-05-15', 'Cuti Bersama Kenaikan Yesus Kristus'),
+('2026-05-27', 'Idul Adha 1447 Hijriah'),
+('2026-05-28', 'Cuti Bersama Idul Adha 1447 H'),
+('2026-05-31', 'Hari Raya Waisak 2570 BE'),
+('2026-06-01', 'Hari Lahir Pancasila'),
+('2026-06-16', '1 Muharram Tahun Baru Islam 1448 Hijriah'),
+('2026-08-17', 'Proklamasi Kemerdekaan Republik Indonesia ke-81'),
+('2026-08-25', 'Maulid Nabi Muhammad SAW'),
+('2026-12-24', 'Cuti Bersama Hari Raya Natal'),
+('2026-12-25', 'Hari Raya Natal');
