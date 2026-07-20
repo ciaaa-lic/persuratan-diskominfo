@@ -18,5 +18,6 @@ export const useActivityLogs = (limit = 100) => {
       const response = await api.get<ActivityLogItem[]>('/log', { params: { limit } });
       return response.data;
     },
+    refetchInterval: 5000,
   });
 };

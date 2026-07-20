@@ -6,21 +6,21 @@ export declare class LiburService implements OnModuleInit {
     onModuleInit(): Promise<void>;
     findAll(year?: number): Promise<{
         id: number;
+        createdAt: Date;
         tanggal: Date;
         keterangan: string;
-        createdAt: Date;
     }[]>;
     create(tanggalStr: string, keterangan: string): Promise<{
         id: number;
+        createdAt: Date;
         tanggal: Date;
         keterangan: string;
-        createdAt: Date;
     }>;
     remove(tanggalStr: string): Promise<{
         id: number;
+        createdAt: Date;
         tanggal: Date;
         keterangan: string;
-        createdAt: Date;
     }>;
     sync(year: number): Promise<{
         success: boolean;

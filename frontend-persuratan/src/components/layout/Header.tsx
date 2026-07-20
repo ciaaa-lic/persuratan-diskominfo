@@ -15,7 +15,6 @@ export function Header() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const { data: notifications } = useGetNotifications();
@@ -61,16 +60,6 @@ export function Header() {
 
   const { title, subtitle } = getPageInfo();
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    if (user?.role === 'ADMIN') {
-      router.push(`/admin/surat?search=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      router.push(`/user/arsip?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
   return (
     <>
       <header className="h-20 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm transition-colors">
@@ -84,28 +73,8 @@ export function Header() {
           </p>
         </div>
 
-        {/* RIGHT: Search, Action Buttons Group & Avatar Pill */}
+        {/* RIGHT: Action Buttons Group & Avatar Pill */}
         <div className="flex items-center gap-2 sm:gap-4 relative">
-          {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="hidden xl:flex items-center">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Cari surat, pengirim..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-56 sm:w-64 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 rounded-full text-xs sm:text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-500 focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner"
-              />
-              <svg
-                className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </form>
 
           {/* Action Buttons Group (Sejajar dan Rapi) */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 bg-gray-50/80 dark:bg-gray-800/60 p-1 rounded-full border border-gray-200/80 dark:border-gray-700/80 shadow-sm">

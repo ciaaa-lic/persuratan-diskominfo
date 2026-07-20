@@ -43,6 +43,6 @@ export const useDashboardStats = () => {
       const response = await api.get<DashboardStats>('/dashboard/stats');
       return response.data;
     },
-    refetchInterval: 15000, // refresh stats every 15 seconds
+    refetchInterval: 5000, // refresh stats every 5 seconds
   });
 };

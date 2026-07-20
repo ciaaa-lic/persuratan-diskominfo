@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/axios';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export interface NomorTerpakai {
   id: number;
@@ -51,6 +52,7 @@ export const useSuratList = (filters?: { bidang?: string; status?: string; searc
       const response = await api.get<PengajuanSurat[]>('/surat', { params });
       return response.data;
     },
+    refetchInterval: 5000,
   });
 };
 
@@ -155,7 +157,9 @@ export const useGetNotifications = () => {
       
       // Update read status from local storage
       if (typeof window !== 'undefined') {
-        const readNotifs = JSON.parse(localStorage.getItem('read_notifications') || '[]');
+        const userId = useAuthStore.getState().user?.id;
+        const storageKey = userId ? `read_notifications_${userId}` : 'read_notifications';
+        const readNotifs = JSON.parse(localStorage.getItem(storageKey) || '[]');
         data = data.map(item => ({
           ...item,
           read: readNotifs.includes(item.id)
@@ -163,14 +167,16 @@ export const useGetNotifications = () => {
       }
       return data;
     },
-    refetchInterval: 15000, // Refresh otomatis tiap 15 detik
+    refetchInterval: 5000, // Refresh otomatis tiap 5 detik
   });
 };
 
 export const markNotificationsAsRead = (ids: string[]) => {
   if (typeof window !== 'undefined' && ids.length > 0) {
-    const readNotifs = JSON.parse(localStorage.getItem('read_notifications') || '[]');
+    const userId = useAuthStore.getState().user?.id;
+    const storageKey = userId ? `read_notifications_${userId}` : 'read_notifications';
+    const readNotifs = JSON.parse(localStorage.getItem(storageKey) || '[]');
     const newReadNotifs = Array.from(new Set([...readNotifs, ...ids]));
-    localStorage.setItem('read_notifications', JSON.stringify(newReadNotifs));
+    localStorage.setItem(storageKey, JSON.stringify(newReadNotifs));
   }
 };

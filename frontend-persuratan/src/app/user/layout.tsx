@@ -7,18 +7,18 @@ import { UserSidebar } from '@/components/layout/UserSidebar';
 import { Header } from '@/components/layout/Header';
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuthStore();
+  const { user, _hasHydrated } = useAuthStore();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    if (!user) {
-      router.push('/login');
+    if (_hasHydrated) {
+      if (!user) {
+        router.push('/login');
+      }
     }
-  }, [user, router]);
+  }, [user, router, _hasHydrated]);
 
-  if (!mounted || !user) return null;
+  if (!_hasHydrated || !user) return null;
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 font-sans">

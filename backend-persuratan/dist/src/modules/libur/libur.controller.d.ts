@@ -4,24 +4,24 @@ export declare class LiburController {
     constructor(liburService: LiburService);
     findAll(year?: string): Promise<{
         id: number;
+        createdAt: Date;
         tanggal: Date;
         keterangan: string;
-        createdAt: Date;
     }[]>;
     create(body: {
         tanggal: string;
         keterangan: string;
     }): Promise<{
         id: number;
+        createdAt: Date;
         tanggal: Date;
         keterangan: string;
-        createdAt: Date;
     }>;
     remove(tanggal: string): Promise<{
         id: number;
+        createdAt: Date;
         tanggal: Date;
         keterangan: string;
-        createdAt: Date;
     }>;
     sync(year: string): Promise<{
         success: boolean;

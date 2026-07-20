@@ -23,25 +23,29 @@ export default function UserArsipPage() {
     return Array.isArray(suratList) ? suratList : (suratList && Array.isArray((suratList as any).data) ? (suratList as any).data : []);
   }, [suratList]);
 
-  const filteredList = useMemo(() => {
+  const baseSearchList = useMemo(() => {
     return rawList.filter((item) => {
       const q = searchQuery.toLowerCase();
-      const matchesSearch =
+      return (
         !q ||
         item.perihal.toLowerCase().includes(q) ||
         (item.nomorSurat && item.nomorSurat.toLowerCase().includes(q)) ||
-        item.pengirim.toLowerCase().includes(q);
-
-      const matchesTab =
-        activeTab === 'Semua'
-          ? true
-          : activeTab === '2026'
-          ? item.tanggalSurat && item.tanggalSurat.includes('2026')
-          : Boolean(item.lampiran);
-
-      return matchesSearch && matchesTab;
+        item.pengirim.toLowerCase().includes(q)
+      );
     });
-  }, [rawList, searchQuery, activeTab]);
+  }, [rawList, searchQuery]);
+
+  const countSemua = baseSearchList.length;
+  const count2026 = baseSearchList.filter(item => item.tanggalSurat && item.tanggalSurat.includes('2026')).length;
+  const countDokumen = baseSearchList.filter(item => Boolean(item.lampiran)).length;
+
+  const filteredList = useMemo(() => {
+    return baseSearchList.filter((item) => {
+      if (activeTab === 'Semua') return true;
+      if (activeTab === '2026') return item.tanggalSurat && item.tanggalSurat.includes('2026');
+      return Boolean(item.lampiran);
+    });
+  }, [baseSearchList, activeTab]);
 
   const copyNomor = (nomor: string) => {
     navigator.clipboard.writeText(nomor);
@@ -153,7 +157,7 @@ export default function UserArsipPage() {
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
             }`}
           >
-            Semua ({rawList.length})
+            Semua ({countSemua})
           </button>
           <button
             onClick={() => setActiveTab('2026')}
@@ -163,7 +167,7 @@ export default function UserArsipPage() {
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
             }`}
           >
-            Tahun 2026
+            Tahun 2026 ({count2026})
           </button>
           <button
             onClick={() => setActiveTab('Dokumen')}
@@ -173,7 +177,7 @@ export default function UserArsipPage() {
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
             }`}
           >
-            Berlampiran Dokumen
+            Berlampiran Dokumen ({countDokumen})
           </button>
         </div>
       </div>

@@ -11,7 +11,7 @@ const swagger_1 = require("@nestjs/swagger");
 const nestjs_api_reference_1 = require("@scalar/nestjs-api-reference");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    app.useStaticAssets((0, path_1.join)(__dirname, '..', 'uploads'), {
+    app.useStaticAssets((0, path_1.join)(process.cwd(), 'uploads'), {
         prefix: '/uploads/',
     });
     app.enableCors();

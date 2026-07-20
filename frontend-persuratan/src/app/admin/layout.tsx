@@ -7,21 +7,21 @@ import { AdminSidebar } from '@/components/layout/AdminSidebar';
 import { Header } from '@/components/layout/Header';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuthStore();
+  const { user, _hasHydrated } = useAuthStore();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    if (!user) {
-      router.push('/login');
-    } else if (user.role !== 'ADMIN') {
-      alert('Akses Ditolak. Khusus Admin.');
-      router.push('/user/dashboard');
+    if (_hasHydrated) {
+      if (!user) {
+        router.push('/login');
+      } else if (user.role !== 'ADMIN') {
+        alert('Akses Ditolak. Khusus Admin.');
+        router.push('/user/dashboard');
+      }
     }
-  }, [user, router]);
+  }, [user, router, _hasHydrated]);
 
-  if (!mounted || !user || user.role !== 'ADMIN') return null;
+  if (!_hasHydrated || !user || user.role !== 'ADMIN') return null;
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 font-sans">
