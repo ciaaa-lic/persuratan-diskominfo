@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum NomorStokStatus {
+  tersedia
+  terpakai
+}
+
+// ─── User ────────────────────────────────────────────────────────────
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  bidang    String?  @db.VarChar(50)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pengajuanSurat PengajuanSurat[]
+}
+
+// ─── Product (boilerplate, retained) ─────────────────────────────────
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Float
+  stock     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Klasifikasi Surat (234 kode) ────────────────────────────────────
+
+model Klasifikasi {
+  id     Int    @id @default(autoincrement())
+  kode   String @unique @db.VarChar(20)
+  uraian String @db.VarChar(255)
+
+  pengajuanSurat PengajuanSurat[]
+}
+
+// ─── Pengajuan Surat (tabel utama) ───────────────────────────────────
+
+model PengajuanSurat {
+  id               Int       @id @default(autoincrement())
+  userId           Int?      @map("user_id")
+  pengirim         String    @db.VarChar(150)
+  tanggalPengajuan DateTime
+  tanggalSurat     DateTime  @db.Date
+  klasifikasiId    Int?      @map("klasifikasi_id")
+  kodeKlasifikasi  String?   @db.VarChar(50)
+  klasifikasi      String?   @db.VarChar(150)
+  perihal          String    @db.Text
+  bidang           String    @db.VarChar(50)
+  lampiran         String?   @db.VarChar(255)
+  status           String    @default("Menunggu") @db.VarChar(30)
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  user            User?           @relation(fields: [userId], references: [id])
+  klasifikasiRef  Klasifikasi?    @relation(fields: [klasifikasiId], references: [id])
+  nomorTerpakai   NomorTerpakai?
+  statusHistory   StatusHistory[]
+
+  @@map("pengajuan_surat")
+}
+
+// ─── Nomor Stok (pool nomor harian SOP) ──────────────────────────────
+
+model NomorStok {
+  id            Int             @id @default(autoincrement())
+  tanggal       DateTime        @db.Date
+  urutan        Int
+  suffix        String          @default("") @db.VarChar(5)
+  nomorFullStok String          @map("nomor_full_stok") @db.VarChar(20)
+  status        NomorStokStatus @default(tersedia)
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  nomorTerpakai NomorTerpakai[]
+
+  @@unique([tanggal, urutan, suffix], name: "unique_stok")
+  @@map("nomor_stok")
+}
+
+// ─── Nomor Terpakai (nomor surat yang diterbitkan) ───────────────────
+
+model NomorTerpakai {
+  id              Int      @id @default(autoincrement())
+  pengajuanId     Int      @unique @map("pengajuan_id")
+  nomorStokId     Int?     @map("nomor_stok_id")
+  nomorSurat      String   @map("nomor_surat") @db.VarChar(150)
+  kodeKlasifikasi String   @map("kode_klasifikasi") @db.VarChar(50)
+  assignedBy      Int?     @map("assigned_by")
+  assignedAt      DateTime @default(now()) @map("assigned_at")
+
+  pengajuan PengajuanSurat @relation(fields: [pengajuanId], references: [id], onDelete: Cascade)
+  nomorStok NomorStok?     @relation(fields: [nomorStokId], references: [id])
+
+  @@map("nomor_terpakai")
+}
+
+// ─── Status History ──────────────────────────────────────────────────
+
+model StatusHistory {
+  id          Int      @id @default(autoincrement())
+  pengajuanId Int      @map("pengajuan_id")
+  status      String   @db.VarChar(50)
+  keterangan  String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  pengajuan PengajuanSurat @relation(fields: [pengajuanId], references: [id], onDelete: Cascade)
+
+  @@map("status_history")
+}
+
+// ─── Hari Libur Nasional ─────────────────────────────────────────────
+
+model HariLiburNasional {
+  id         Int      @id @default(autoincrement())
+  tanggal    DateTime @unique @db.Date
+  keterangan String   @db.VarChar(255)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("hari_libur_nasional")
+}
+
+// ─── Activity Logs ───────────────────────────────────────────────────
+
+model ActivityLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int?     @map("user_id")
+  userName    String   @map("user_name") @db.VarChar(150)
+  role        String   @db.VarChar(50)
+  action      String   @db.VarChar(100)
+  description String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("activity_logs")
+}
