@@ -35,7 +35,7 @@ export function LoginForm() {
     loginMutation.mutate(payload, {
       onSuccess: (data: any) => {
         const resPayload = data?.user ? data : data?.data || data;
-        const role = resPayload?.user?.role || 'USER';
+        const role = resPayload?.user?.role || 'BIDANG';
         if (role === 'ADMIN') {
           router.push('/admin/dashboard');
         } else {

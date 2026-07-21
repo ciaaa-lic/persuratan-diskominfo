@@ -13,11 +13,6 @@ datasource db {
 
 // ─── Enums ───────────────────────────────────────────────────────────
 
-enum Role {
-  USER
-  ADMIN
-}
-
 enum NomorStokStatus {
   tersedia
   terpakai
@@ -30,12 +25,13 @@ model User {
   email     String   @unique
   password  String
   name      String
-  role      Role     @default(USER)
+  role      String   @default("BIDANG") @db.VarChar(50)
   bidang    String?  @db.VarChar(50)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   pengajuanSurat PengajuanSurat[]
+  notifications  Notification[]
 }
 
 // ─── Product (boilerplate, retained) ─────────────────────────────────
@@ -155,4 +151,21 @@ model ActivityLog {
   createdAt   DateTime @default(now()) @map("created_at")
 
   @@map("activity_logs")
+}
+
+// ─── Notification ────────────────────────────────────────────────────
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  title     String   @db.VarChar(150)
+  message   String   @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  type      String   @db.VarChar(50)
+  link      String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }

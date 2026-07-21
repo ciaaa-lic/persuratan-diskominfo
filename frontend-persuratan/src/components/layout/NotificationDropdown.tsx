@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useGetNotifications, NotificationItem, markNotificationsAsRead } from '@/features/surat/api';
+import { useGetNotifications, NotificationItem, useMarkNotificationsRead } from '@/features/surat/api';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -13,20 +13,16 @@ interface NotificationDropdownProps {
 export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownProps) {
   const { data: notifications, isLoading } = useGetNotifications();
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const markReadMutation = useMarkNotificationsRead();
 
   useEffect(() => {
     if (isOpen && notifications) {
-      const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
-      if (unreadIds.length > 0) {
-        markNotificationsAsRead(unreadIds);
-        // Refresh notifications to reflect read status
-        setTimeout(() => {
-          queryClient.invalidateQueries({ queryKey: ['notifications'] });
-        }, 100);
+      const unreadCount = notifications.filter(n => !n.read).length;
+      if (unreadCount > 0 && !markReadMutation.isPending) {
+        markReadMutation.mutate();
       }
     }
-  }, [isOpen, notifications, queryClient]);
+  }, [isOpen, notifications, markReadMutation]);
 
   if (!isOpen) return null;
 
