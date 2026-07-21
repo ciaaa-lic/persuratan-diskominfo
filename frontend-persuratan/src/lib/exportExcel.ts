@@ -73,8 +73,20 @@ export async function exportSuratToExcel(data: SuratRowExport[]) {
     cell.alignment = { vertical: 'middle', horizontal: 'center' };
   });
 
+  // Sort by tanggalSurat (asc), then nomorSurat (asc)
+  const sortedData = [...data].sort((a, b) => {
+    const dateA = new Date(a.tanggalSurat || 0).getTime();
+    const dateB = new Date(b.tanggalSurat || 0).getTime();
+    if (dateA !== dateB) {
+      return dateA - dateB;
+    }
+    const nomA = a.nomorSurat || '';
+    const nomB = b.nomorSurat || '';
+    return nomA.localeCompare(nomB, undefined, { numeric: true });
+  });
+
   // Add data rows
-  data.forEach((row) => {
+  sortedData.forEach((row) => {
     let formattedTglPengajuan = '-';
     if (row.tanggalPengajuan) {
       try {

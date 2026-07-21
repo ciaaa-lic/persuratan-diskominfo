@@ -7,7 +7,10 @@ import { SuratDetailModal } from '@/components/surat/SuratDetailModal';
 import Swal from 'sweetalert2';
 
 export default function AdminRekapPage() {
-  const [filterTanggal, setFilterTanggal] = useState('');
+  const [tanggalSuratStart, setTanggalSuratStart] = useState('');
+  const [tanggalSuratEnd, setTanggalSuratEnd] = useState('');
+  const [tanggalPengajuanStart, setTanggalPengajuanStart] = useState('');
+  const [tanggalPengajuanEnd, setTanggalPengajuanEnd] = useState('');
   const [filterBidang, setFilterBidang] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [selectedSurat, setSelectedSurat] = useState<any>(null);
@@ -20,9 +23,24 @@ export default function AdminRekapPage() {
 
   const rawList: PengajuanSurat[] = Array.isArray(suratList) ? suratList : (suratList && Array.isArray((suratList as any).data) ? (suratList as any).data : []);
   const list = rawList.filter((s: PengajuanSurat) => {
-    if (filterTanggal && s.tanggalSurat && !s.tanggalSurat.startsWith(filterTanggal)) {
+    // Tanggal Surat filter
+    if (s.tanggalSurat) {
+      const ts = new Date(s.tanggalSurat);
+      if (tanggalSuratStart && ts < new Date(`${tanggalSuratStart}T00:00:00`)) return false;
+      if (tanggalSuratEnd && ts > new Date(`${tanggalSuratEnd}T23:59:59`)) return false;
+    } else if (tanggalSuratStart || tanggalSuratEnd) {
+      return false; // required by filter but missing
+    }
+
+    // Tanggal Pengajuan filter
+    if (s.tanggalPengajuan) {
+      const tp = new Date(s.tanggalPengajuan);
+      if (tanggalPengajuanStart && tp < new Date(`${tanggalPengajuanStart}T00:00:00`)) return false;
+      if (tanggalPengajuanEnd && tp > new Date(`${tanggalPengajuanEnd}T23:59:59`)) return false;
+    } else if (tanggalPengajuanStart || tanggalPengajuanEnd) {
       return false;
     }
+
     return true;
   });
 
@@ -85,7 +103,10 @@ export default function AdminRekapPage() {
   };
 
   const resetFilters = () => {
-    setFilterTanggal('');
+    setTanggalSuratStart('');
+    setTanggalSuratEnd('');
+    setTanggalPengajuanStart('');
+    setTanggalPengajuanEnd('');
     setFilterBidang('');
     setFilterStatus('');
   };
@@ -113,91 +134,51 @@ export default function AdminRekapPage() {
         </button>
       </div>
 
-      {/* Charts Section: Surat per Bulan & Proporsi Bidang */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Bar Chart: Surat per Bulan */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white">Surat per Bulan</h3>
-              <p className="text-xs text-gray-400">Statistik Tahunan ({new Date().getFullYear()})</p>
-            </div>
-            <span className="px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold text-xs">
-              Total: {list.length}
-            </span>
-          </div>
-
-          {/* Custom Bar Visual */}
-          <div className="h-44 flex items-end justify-between gap-2 pt-4 px-2 border-b border-gray-100 dark:border-gray-800">
-            {monthsName.map((m, idx) => {
-              const count = monthlyCounts[idx];
-              const heightPercent = Math.max(8, Math.round((count / maxMonthCount) * 100));
-              return (
-                <div key={m} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-                  <span className="text-[10px] font-bold text-gray-400 group-hover:text-red-600 transition-colors">
-                    {count > 0 ? count : ''}
-                  </span>
-                  <div
-                    style={{ height: `${heightPercent}%` }}
-                    className={`w-full rounded-t-lg transition-all ${
-                      count > 0
-                        ? 'bg-gradient-to-t from-red-800 to-red-600 group-hover:brightness-110 shadow-sm'
-                        : 'bg-gray-100 dark:bg-gray-800'
-                    }`}
-                  />
-                  <span className="text-[10px] font-semibold text-gray-500 mt-1">{m}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Distribution Card: Proporsi Bidang & Klasifikasi */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white">Proporsi Bidang Dinas</h3>
-              <p className="text-xs text-gray-400">Distribusi penomoran antar bidang kerja</p>
-            </div>
-          </div>
-
-          <div className="space-y-3.5 my-auto">
-            {Object.entries(bidangCounts).map(([bName, count]) => {
-              const percent = list.length > 0 ? Math.round((count / list.length) * 100) : 0;
-              return (
-                <div key={bName} className="space-y-1">
-                  <div className="flex justify-between text-xs font-bold">
-                    <span className="text-gray-800 dark:text-gray-200">{bName}</span>
-                    <span className="text-red-600 dark:text-red-400">
-                      {count} Surat ({percent}%)
-                    </span>
-                  </div>
-                  <div className="w-full h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                    <div
-                      style={{ width: `${percent}%` }}
-                      className="h-full bg-gradient-to-r from-red-600 to-red-800 rounded-full transition-all"
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* Filters Toolbar */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
-              Filter Tanggal
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+          {/* Tanggal Surat Range */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+              TANGGAL SURAT
             </label>
-            <input
-              type="date"
-              value={filterTanggal}
-              onChange={(e) => setFilterTanggal(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs font-semibold text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={tanggalSuratStart}
+                onChange={(e) => setTanggalSuratStart(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+              <span className="text-gray-400 text-xs font-medium">s/d</span>
+              <input
+                type="date"
+                value={tanggalSuratEnd}
+                onChange={(e) => setTanggalSuratEnd(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
+          </div>
+
+          {/* Tanggal Pengajuan Range */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+              TANGGAL PENGAJUAN
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={tanggalPengajuanStart}
+                onChange={(e) => setTanggalPengajuanStart(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+              <span className="text-gray-400 text-xs font-medium">s/d</span>
+              <input
+                type="date"
+                value={tanggalPengajuanEnd}
+                onChange={(e) => setTanggalPengajuanEnd(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
           </div>
 
           <div>
