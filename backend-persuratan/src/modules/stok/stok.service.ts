@@ -101,14 +101,17 @@ export class StokService {
       });
     }
 
-    // Cari stok pertama yang tersedia pada rentang hari ini
+    // Cari stok pertama yang tersedia pada rentang hari ini (paling kecil/awal)
     let stokRow = await this.prisma.nomorStok.findFirst({
       where: {
         tanggal: targetDate,
         urutan: { gte: startNum, lte: endNum },
         status: NomorStokStatus.tersedia,
       },
-      orderBy: { id: 'asc' },
+      orderBy: [
+        { urutan: 'asc' },
+        { suffix: 'asc' }
+      ],
     });
 
     if (!stokRow) {
@@ -154,7 +157,10 @@ export class StokService {
           urutan: { gte: startNum, lte: endNum },
           status: NomorStokStatus.tersedia,
         },
-        orderBy: { id: 'asc' },
+        orderBy: [
+          { urutan: 'asc' },
+          { suffix: 'asc' }
+        ],
       });
     }
 

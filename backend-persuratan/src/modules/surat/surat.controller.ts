@@ -61,6 +61,16 @@ export class SuratController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  @Patch('notifications/read')
+  async markNotificationsAsRead(@Request() req: AuthenticatedRequest) {
+    return this.suratService.markNotificationsAsRead(
+      req.user?.userId,
+      req.user?.role,
+    );
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.suratService.findOne(id);

@@ -1,4 +1,4 @@
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -14,11 +14,11 @@ async function main() {
   const humasPassword = await bcrypt.hash('humas', 10);
 
   const users = [
-    { email: 'admin@diskominfo.go.id', name: 'Admin Utama', password: defaultPassword, role: Role.ADMIN, bidang: null },
-    { email: 'aptika@diskominfo.go.id', name: 'Bid. APTIKA', password: aptikaPassword, role: Role.USER, bidang: 'APTIKA' },
-    { email: 'persandian@diskominfo.go.id', name: 'Bid. PERSANDIAN', password: persandianPassword, role: Role.USER, bidang: 'PERSANDIAN' },
-    { email: 'pde@diskominfo.go.id', name: 'Bid. PDE', password: pdePassword, role: Role.USER, bidang: 'PDE' },
-    { email: 'humas@diskominfo.go.id', name: 'Bid. HUMAS', password: humasPassword, role: Role.USER, bidang: 'HUMAS' },
+    { email: 'admin@diskominfo.go.id', name: 'Admin Utama', password: defaultPassword, role: 'ADMIN', bidang: null },
+    { email: 'aptika@diskominfo.go.id', name: 'Bid. APTIKA', password: aptikaPassword, role: 'BIDANG', bidang: 'APTIKA' },
+    { email: 'persandian@diskominfo.go.id', name: 'Bid. PERSANDIAN', password: persandianPassword, role: 'BIDANG', bidang: 'PERSANDIAN' },
+    { email: 'pde@diskominfo.go.id', name: 'Bid. PDE', password: pdePassword, role: 'BIDANG', bidang: 'PDE' },
+    { email: 'humas@diskominfo.go.id', name: 'Bid. HUMAS', password: humasPassword, role: 'BIDANG', bidang: 'HUMAS' },
   ];
 
   for (const u of users) {
