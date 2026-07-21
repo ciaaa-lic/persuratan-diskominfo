@@ -11,13 +11,16 @@ import Swal from 'sweetalert2';
 
 export default function AdminDashboardPage() {
   const { user } = useAuthStore();
+  const [filterBidang, setFilterBidang] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
-
+  
   const [selectedSuratDetail, setSelectedSuratDetail] = useState<PengajuanSurat | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const { data: stats, isLoading: loadingStats } = useDashboardStats();
+  const totalSisaKuota = stats?.stokSummary?.groups?.reduce((acc: number, curr: { total: number; used: number }) => acc + (curr.total - curr.used), 0) || 0;
+  
   const { data: suratList, isLoading: loadingSurat } = useSuratList({
     status: filterStatus || undefined,
     search: searchQuery || undefined,
@@ -58,13 +61,13 @@ export default function AdminDashboardPage() {
         </div>
         <div className="flex items-center gap-3">
           <Link
-            href="/admin/surat"
+            href="/admin/rekap"
             className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold shadow-lg shadow-red-600/30 flex items-center gap-2 transition-all"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2m16-2v2m-3-3a3 3 0 10-6 0 3 3 0 006 0z" />
             </svg>
-            Kelola Penomoran Surat
+            Rekap & Laporan Surat
           </Link>
         </div>
       </div>
@@ -133,13 +136,7 @@ export default function AdminDashboardPage() {
           </p>
         </div>
         
-        {/* Hari Ini: Menunggu */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm border-l-4 border-l-yellow-500">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400">Menunggu (Hari Ini)</p>
-          <p className="text-2xl sm:text-3xl font-black text-yellow-600 dark:text-yellow-400 mt-1.5">
-            {loadingStats ? '-' : stats?.hariIni?.menunggu || '0'}
-          </p>
-        </div>
+
 
         {/* Hari Ini: Selesai */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm border-l-4 border-l-emerald-500">
@@ -172,6 +169,14 @@ export default function AdminDashboardPage() {
             {loadingStats ? '-' : stats?.bulanIni?.terpakai || '0'}
           </p>
         </div>
+
+        {/* Hari Ini: Sisa Kuota */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm border-l-4 border-l-yellow-500">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400">Sisa Kuota Nomor (Hari Ini)</p>
+          <p className="text-2xl sm:text-3xl font-black text-yellow-600 dark:text-yellow-400 mt-1.5">
+            {loadingStats ? '-' : totalSisaKuota}
+          </p>
+        </div>
       </div>
 
       {/* Main Table Section */}
@@ -201,14 +206,14 @@ export default function AdminDashboardPage() {
                 Semua
               </button>
               <button
-                onClick={() => setFilterStatus('Menunggu')}
+                onClick={() => setFilterStatus('Dibatalkan')}
                 className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
-                  filterStatus === 'Menunggu'
-                    ? 'bg-yellow-500 text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-yellow-600'
+                  filterStatus === 'Dibatalkan'
+                    ? 'bg-red-500 text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-red-600'
                 }`}
               >
-                Menunggu
+                Dibatalkan
               </button>
               <button
                 onClick={() => setFilterStatus('Selesai')}
@@ -397,7 +402,7 @@ export default function AdminDashboardPage() {
                     Blok Utama Tanpa Suffix (1–40)
                   </span>
                   <span className="text-xs font-extrabold px-2 py-0.5 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                    {stats?.stokSummary?.blockStats?.used || 0} / 40 Terpakai
+                    {stats?.stokSummary?.groups?.find(g => g.suffix === '')?.used || 0} / 40 Terpakai
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
@@ -405,7 +410,7 @@ export default function AdminDashboardPage() {
                     className="bg-red-600 h-2 rounded-full transition-all duration-500"
                     style={{
                       width: `${Math.min(
-                        ((stats?.stokSummary?.blockStats?.used || 0) / 40) * 100,
+                        ((stats?.stokSummary?.groups?.find(g => g.suffix === '')?.used || 0) / 40) * 100,
                         100,
                       )}%`,
                     }}
@@ -420,13 +425,13 @@ export default function AdminDashboardPage() {
                     Blok Cadangan Suffix &quot;A&quot; (1.A–40.A)
                   </span>
                   <span className="text-xs font-extrabold px-2 py-0.5 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                    {stats?.stokSummary?.lastSuffix === 'A' ? 'Aktif' : 'Tersedia'} (Max 40)
+                    {stats?.stokSummary?.groups?.some(g => g.suffix === 'A') ? 'Aktif' : 'Tersedia'} (Max 40)
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                    style={{ width: stats?.stokSummary?.lastSuffix === 'A' ? '50%' : '0%' }}
+                    style={{ width: stats?.stokSummary?.groups?.some(g => g.suffix === 'A') ? '50%' : '0%' }}
                   />
                 </div>
               </div>

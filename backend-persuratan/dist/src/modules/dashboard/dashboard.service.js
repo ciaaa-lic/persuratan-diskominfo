@@ -28,7 +28,7 @@ let DashboardService = class DashboardService {
         const todayEnd = new Date(`${todayStr}T23:59:59.999Z`);
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-        const [pengajuanHariIni, menungguHariIni, selesaiHariIni, masukBulanIni, keluarBulanIni] = await Promise.all([
+        const [pengajuanHariIni, menungguHariIni, selesaiHariIni, masukBulanIni, keluarBulanIni, dibatalkanBulanIni, dibatalkanHariIni] = await Promise.all([
             this.prisma.pengajuanSurat.count({
                 where: { tanggalPengajuan: { gte: todayStart, lte: todayEnd } },
             }),
@@ -44,6 +44,12 @@ let DashboardService = class DashboardService {
             this.prisma.nomorTerpakai.count({
                 where: { assignedAt: { gte: firstDayOfMonth, lte: lastDayOfMonth } },
             }),
+            this.prisma.pengajuanSurat.count({
+                where: { status: 'Dibatalkan', tanggalPengajuan: { gte: firstDayOfMonth, lte: lastDayOfMonth } },
+            }),
+            this.prisma.pengajuanSurat.count({
+                where: { status: 'Dibatalkan', tanggalPengajuan: { gte: todayStart, lte: todayEnd } },
+            }),
         ]);
         return {
             workingDayIndex: stokSummary.workingDayIndex,
@@ -53,11 +59,13 @@ let DashboardService = class DashboardService {
                 pengajuan: pengajuanHariIni,
                 menunggu: menungguHariIni,
                 selesai: selesaiHariIni,
+                dibatalkan: dibatalkanHariIni,
             },
             bulanIni: {
                 masuk: masukBulanIni,
                 keluar: keluarBulanIni,
                 terpakai: keluarBulanIni,
+                dibatalkan: dibatalkanBulanIni,
             },
         };
     }

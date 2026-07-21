@@ -25,7 +25,9 @@ export class DashboardService {
       menungguHariIni,
       selesaiHariIni,
       masukBulanIni,
-      keluarBulanIni
+      keluarBulanIni,
+      dibatalkanBulanIni,
+      dibatalkanHariIni
     ] = await Promise.all([
       this.prisma.pengajuanSurat.count({
         where: { tanggalPengajuan: { gte: todayStart, lte: todayEnd } },
@@ -42,6 +44,12 @@ export class DashboardService {
       this.prisma.nomorTerpakai.count({
         where: { assignedAt: { gte: firstDayOfMonth, lte: lastDayOfMonth } },
       }),
+      this.prisma.pengajuanSurat.count({
+        where: { status: 'Dibatalkan', tanggalPengajuan: { gte: firstDayOfMonth, lte: lastDayOfMonth } },
+      }),
+      this.prisma.pengajuanSurat.count({
+        where: { status: 'Dibatalkan', tanggalPengajuan: { gte: todayStart, lte: todayEnd } },
+      }),
     ]);
 
     return {
@@ -52,11 +60,13 @@ export class DashboardService {
         pengajuan: pengajuanHariIni,
         menunggu: menungguHariIni,
         selesai: selesaiHariIni,
+        dibatalkan: dibatalkanHariIni,
       },
       bulanIni: {
         masuk: masukBulanIni,
         keluar: keluarBulanIni,
         terpakai: keluarBulanIni, // Total Nomor Surat Terpakai is identical to Surat Keluar
+        dibatalkan: dibatalkanBulanIni,
       },
     };
   }

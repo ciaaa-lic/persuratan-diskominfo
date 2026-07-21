@@ -11,7 +11,7 @@ export default function UserDashboardPage() {
   const { user } = useAuthStore();
   const [selectedSurat, setSelectedSurat] = useState<PengajuanSurat | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'Semua' | 'Menunggu' | 'Selesai'>('Semua');
+  const [activeTab, setActiveTab] = useState<'Semua' | 'Selesai' | 'Dibatalkan'>('Semua');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter surat by current user's bidang
@@ -23,8 +23,8 @@ export default function UserDashboardPage() {
     return Array.isArray(suratList) ? suratList : (suratList && Array.isArray((suratList as any).data) ? (suratList as any).data : []);
   }, [suratList]);
   
-  const waitingCount = useMemo(
-    () => mySuratList.filter((s) => s.status === 'Menunggu').length,
+  const canceledCount = useMemo(
+    () => mySuratList.filter((s) => s.status === 'Dibatalkan').length,
     [mySuratList]
   );
   const doneCount = useMemo(
@@ -36,7 +36,7 @@ export default function UserDashboardPage() {
   const filteredList = useMemo(() => {
     return mySuratList.filter((item) => {
       const matchesTab =
-        activeTab === 'Semua' ? true : activeTab === 'Menunggu' ? item.status === 'Menunggu' : item.status === 'Selesai';
+        activeTab === 'Semua' ? true : activeTab === 'Dibatalkan' ? item.status === 'Dibatalkan' : item.status === 'Selesai';
       
       const q = searchQuery.toLowerCase();
       const matchesSearch =
@@ -145,7 +145,7 @@ export default function UserDashboardPage() {
       </div>
 
       {/* 4. 4 COLORED OVERVIEW STATS CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Card 1: Total Pengajuan Saya */}
         <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-2xl p-5 text-white shadow-lg shadow-red-600/20 flex flex-col justify-between relative overflow-hidden">
           <div className="flex items-center justify-between">
@@ -162,21 +162,7 @@ export default function UserDashboardPage() {
           </div>
         </div>
 
-        {/* Card 2: Menunggu Penomoran */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm border-l-4 border-l-yellow-500 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Menunggu Verifikasi</p>
-            <div className="w-9 h-9 rounded-xl bg-yellow-50 dark:bg-yellow-950/60 text-yellow-600 dark:text-yellow-400 flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-          <div className="mt-4">
-            <p className="text-3xl font-black text-yellow-600 dark:text-yellow-400">{waitingCount}</p>
-            <p className="text-xs text-gray-400 mt-1">Diproses admin sekretariat</p>
-          </div>
-        </div>
+
 
         {/* Card 3: Selesai Dinomori */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm border-l-4 border-l-emerald-600 flex flex-col justify-between">
@@ -239,14 +225,14 @@ export default function UserDashboardPage() {
               Semua ({mySuratList.length})
             </button>
             <button
-              onClick={() => setActiveTab('Menunggu')}
+              onClick={() => setActiveTab('Dibatalkan')}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === 'Menunggu'
-                  ? 'bg-white dark:bg-gray-900 text-yellow-600 dark:text-yellow-400 shadow-2xs'
+                activeTab === 'Dibatalkan'
+                  ? 'bg-white dark:bg-gray-900 text-red-600 dark:text-red-400 shadow-2xs'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
               }`}
             >
-              Menunggu ({waitingCount})
+              Dibatalkan ({canceledCount})
             </button>
             <button
               onClick={() => setActiveTab('Selesai')}

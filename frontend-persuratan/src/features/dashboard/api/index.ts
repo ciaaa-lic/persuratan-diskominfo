@@ -5,34 +5,27 @@ export interface DashboardStats {
   workingDayIndex: number;
   numberRange: string;
   stokSummary: {
-    today: string;
+    tanggal: string;
     workingDayIndex: number;
-    startNum: number;
-    endNum: number;
     numberRange: string;
-    blockStats: {
-      total: number;
-      available: number;
-      used: number;
-    };
-    lastSuffix: string;
-    details: {
-      id: number;
-      urutan: number;
+    totalTerpakai: number;
+    groups: {
       suffix: string;
-      nomorFullStok: string;
-      status: string;
+      total: number;
+      used: number;
     }[];
   };
   hariIni: {
     pengajuan: number;
     menunggu: number;
     selesai: number;
+    dibatalkan: number;
   };
   bulanIni: {
     masuk: number;
     keluar: number;
     terpakai: number;
+    dibatalkan: number;
   };
 }
 

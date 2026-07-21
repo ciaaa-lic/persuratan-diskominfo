@@ -20,11 +20,13 @@ export declare class DashboardController {
             pengajuan: number;
             menunggu: number;
             selesai: number;
+            dibatalkan: number;
         };
         bulanIni: {
             masuk: number;
             keluar: number;
             terpakai: number;
+            dibatalkan: number;
         };
     }>;
 }
