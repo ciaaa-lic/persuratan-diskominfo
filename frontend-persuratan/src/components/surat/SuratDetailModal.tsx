@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { PengajuanSurat } from '@/features/surat/api';
+import { PengajuanSurat, useDeleteSurat } from '@/features/surat/api';
+import { useAuthStore } from '@/store/useAuthStore';
 import Swal from 'sweetalert2';
 
 interface SuratDetailModalProps {
@@ -11,6 +12,9 @@ interface SuratDetailModalProps {
 }
 
 export function SuratDetailModal({ surat, isOpen, onClose }: SuratDetailModalProps) {
+  const { user } = useAuthStore();
+  const deleteMutation = useDeleteSurat();
+
   if (!isOpen || !surat) return null;
 
   const copyNomor = (nomor: string) => {
@@ -23,6 +27,37 @@ export function SuratDetailModal({ surat, isOpen, onClose }: SuratDetailModalPro
       showConfirmButton: false,
       toast: true,
       position: 'top-end',
+    });
+  };
+
+  const handleDelete = () => {
+    Swal.fire({
+      title: 'Hapus Pengajuan?',
+      text: "Data surat dan nomor yang terpakai akan dihapus. Nomor akan kembali tersedia untuk pengajuan lain pada tanggal yang sama.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Ya, Hapus!',
+      cancelButtonText: 'Batal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteMutation.mutate(surat.id, {
+          onSuccess: () => {
+            Swal.fire({
+              title: 'Terhapus!',
+              text: 'Pengajuan surat berhasil dihapus.',
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false
+            });
+            onClose();
+          },
+          onError: (error: any) => {
+            Swal.fire('Gagal', error.response?.data?.message || 'Terjadi kesalahan', 'error');
+          }
+        });
+      }
     });
   };
 
@@ -153,7 +188,7 @@ export function SuratDetailModal({ surat, isOpen, onClose }: SuratDetailModalPro
                         {hist.status}
                       </span>
                       <span className="text-[10px] text-gray-400">
-                        {new Date(hist.changedAt).toLocaleString('id-ID', {
+                        {new Date(hist.createdAt).toLocaleString('id-ID', {
                           day: 'numeric',
                           month: 'short',
                           year: 'numeric',
@@ -194,7 +229,21 @@ export function SuratDetailModal({ surat, isOpen, onClose }: SuratDetailModalPro
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 flex justify-end">
+        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center">
+          <div>
+            {(user?.role === 'ADMIN' || user?.bidang === surat.bidang) && (
+              <button
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+                className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-950/50 dark:hover:bg-red-900/60 dark:text-red-400 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                {deleteMutation.isPending ? 'Menghapus...' : 'Hapus Pengajuan'}
+              </button>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="px-5 py-2 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-white rounded-xl text-xs font-semibold transition-colors"

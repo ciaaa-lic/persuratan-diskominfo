@@ -6,7 +6,6 @@ import { useDashboardStats } from '@/features/dashboard/api';
 import { useSuratList, PengajuanSurat } from '@/features/surat/api';
 import { useActivityLogs } from '@/features/log/api';
 import { SuratDetailModal } from '@/components/surat/SuratDetailModal';
-import { GenerateNomorModal } from '@/components/surat/GenerateNomorModal';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 
@@ -17,9 +16,6 @@ export default function AdminDashboardPage() {
 
   const [selectedSuratDetail, setSelectedSuratDetail] = useState<PengajuanSurat | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-
-  const [selectedSuratGenerate, setSelectedSuratGenerate] = useState<PengajuanSurat | null>(null);
-  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
 
   const { data: stats, isLoading: loadingStats } = useDashboardStats();
   const { data: suratList, isLoading: loadingSurat } = useSuratList({
@@ -187,7 +183,7 @@ export default function AdminDashboardPage() {
               Data Pengajuan Penomoran Surat
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              Klik &quot;Generate Nomor&quot; untuk menerbitkan nomor surat resmi dengan klasifikasi yang sesuai
+              Seluruh riwayat pengajuan penomoran dari berbagai bidang
             </p>
           </div>
 
@@ -346,20 +342,6 @@ export default function AdminDashboardPage() {
                     </td>
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-2">
-                        {item.status === 'Menunggu' && (
-                          <button
-                            onClick={() => {
-                              setSelectedSuratGenerate(item);
-                              setIsGenerateOpen(true);
-                            }}
-                            className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-md shadow-red-600/20 text-xs transition-all flex items-center gap-1"
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                            </svg>
-                            Generate Nomor
-                          </button>
-                        )}
                         <button
                           onClick={() => {
                             setSelectedSuratDetail(item);
@@ -513,13 +495,6 @@ export default function AdminDashboardPage() {
         surat={selectedSuratDetail}
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
-      />
-
-      {/* Generate Nomor Modal */}
-      <GenerateNomorModal
-        surat={selectedSuratGenerate}
-        isOpen={isGenerateOpen}
-        onClose={() => setIsGenerateOpen(false)}
       />
     </div>
   );
