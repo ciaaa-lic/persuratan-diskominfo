@@ -11,34 +11,41 @@ export default function AdminRekapPage() {
   const [tanggalSuratEnd, setTanggalSuratEnd] = useState('');
   const [tanggalPengajuanStart, setTanggalPengajuanStart] = useState('');
   const [tanggalPengajuanEnd, setTanggalPengajuanEnd] = useState('');
+  const [dateFilterMode, setDateFilterMode] = useState<'surat' | 'pengajuan'>('surat');
   const [filterBidang, setFilterBidang] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedSurat, setSelectedSurat] = useState<any>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const { data: suratList, isLoading } = useSuratList({
     bidang: filterBidang || undefined,
     status: filterStatus || undefined,
+    search: searchQuery || undefined,
   });
+
+
 
   const rawList: PengajuanSurat[] = Array.isArray(suratList) ? suratList : (suratList && Array.isArray((suratList as any).data) ? (suratList as any).data : []);
   const list = rawList.filter((s: PengajuanSurat) => {
-    // Tanggal Surat filter
-    if (s.tanggalSurat) {
-      const ts = new Date(s.tanggalSurat);
-      if (tanggalSuratStart && ts < new Date(`${tanggalSuratStart}T00:00:00`)) return false;
-      if (tanggalSuratEnd && ts > new Date(`${tanggalSuratEnd}T23:59:59`)) return false;
-    } else if (tanggalSuratStart || tanggalSuratEnd) {
-      return false; // required by filter but missing
-    }
-
-    // Tanggal Pengajuan filter
-    if (s.tanggalPengajuan) {
-      const tp = new Date(s.tanggalPengajuan);
-      if (tanggalPengajuanStart && tp < new Date(`${tanggalPengajuanStart}T00:00:00`)) return false;
-      if (tanggalPengajuanEnd && tp > new Date(`${tanggalPengajuanEnd}T23:59:59`)) return false;
-    } else if (tanggalPengajuanStart || tanggalPengajuanEnd) {
-      return false;
+    if (dateFilterMode === 'surat') {
+      // Tanggal Surat filter
+      if (s.tanggalSurat) {
+        const ts = new Date(s.tanggalSurat);
+        if (tanggalSuratStart && ts < new Date(`${tanggalSuratStart}T00:00:00`)) return false;
+        if (tanggalSuratEnd && ts > new Date(`${tanggalSuratEnd}T23:59:59`)) return false;
+      } else if (tanggalSuratStart || tanggalSuratEnd) {
+        return false; // required by filter but missing
+      }
+    } else {
+      // Tanggal Pengajuan filter
+      if (s.tanggalPengajuan) {
+        const tp = new Date(s.tanggalPengajuan);
+        if (tanggalPengajuanStart && tp < new Date(`${tanggalPengajuanStart}T00:00:00`)) return false;
+        if (tanggalPengajuanEnd && tp > new Date(`${tanggalPengajuanEnd}T23:59:59`)) return false;
+      } else if (tanggalPengajuanStart || tanggalPengajuanEnd) {
+        return false;
+      }
     }
 
     return true;
@@ -109,6 +116,8 @@ export default function AdminRekapPage() {
     setTanggalPengajuanEnd('');
     setFilterBidang('');
     setFilterStatus('');
+    setSearchQuery('');
+    setDateFilterMode('surat');
   };
 
   return (
@@ -137,48 +146,71 @@ export default function AdminRekapPage() {
       {/* Filters Toolbar */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-          {/* Tanggal Surat Range */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
-              TANGGAL SURAT
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={tanggalSuratStart}
-                onChange={(e) => setTanggalSuratStart(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
-              />
-              <span className="text-gray-400 text-xs font-medium">s/d</span>
-              <input
-                type="date"
-                value={tanggalSuratEnd}
-                onChange={(e) => setTanggalSuratEnd(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
-              />
+          {/* Tanggal Range with Mode Toggle */}
+          <div className="flex flex-col gap-1.5 lg:col-span-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                RENTANG WAKTU
+              </label>
+              <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 p-1 rounded-lg">
+                <label className={`flex items-center gap-1.5 px-3 py-1 text-xs cursor-pointer font-semibold rounded-md transition-colors ${dateFilterMode === 'surat' ? 'bg-white dark:bg-gray-700 shadow-sm text-red-600 dark:text-red-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
+                  <input
+                    type="radio"
+                    name="dateMode"
+                    value="surat"
+                    checked={dateFilterMode === 'surat'}
+                    onChange={() => setDateFilterMode('surat')}
+                    className="sr-only"
+                  />
+                  Tanggal Surat
+                </label>
+                <label className={`flex items-center gap-1.5 px-3 py-1 text-xs cursor-pointer font-semibold rounded-md transition-colors ${dateFilterMode === 'pengajuan' ? 'bg-white dark:bg-gray-700 shadow-sm text-red-600 dark:text-red-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
+                  <input
+                    type="radio"
+                    name="dateMode"
+                    value="pengajuan"
+                    checked={dateFilterMode === 'pengajuan'}
+                    onChange={() => setDateFilterMode('pengajuan')}
+                    className="sr-only"
+                  />
+                  Tanggal Pengajuan
+                </label>
+              </div>
             </div>
-          </div>
 
-          {/* Tanggal Pengajuan Range */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
-              TANGGAL PENGAJUAN
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={tanggalPengajuanStart}
-                onChange={(e) => setTanggalPengajuanStart(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
-              />
-              <span className="text-gray-400 text-xs font-medium">s/d</span>
-              <input
-                type="date"
-                value={tanggalPengajuanEnd}
-                onChange={(e) => setTanggalPengajuanEnd(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
-              />
-            </div>
+            {dateFilterMode === 'surat' ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={tanggalSuratStart}
+                  onChange={(e) => setTanggalSuratStart(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+                <span className="text-gray-400 text-xs font-medium">s/d</span>
+                <input
+                  type="date"
+                  value={tanggalSuratEnd}
+                  onChange={(e) => setTanggalSuratEnd(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={tanggalPengajuanStart}
+                  onChange={(e) => setTanggalPengajuanStart(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+                <span className="text-gray-400 text-xs font-medium">s/d</span>
+                <input
+                  type="date"
+                  value={tanggalPengajuanEnd}
+                  onChange={(e) => setTanggalPengajuanEnd(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -208,15 +240,28 @@ export default function AdminRekapPage() {
               className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs font-semibold text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="">Semua Status</option>
-              <option value="Menunggu">Menunggu</option>
               <option value="Selesai">Selesai</option>
+              <option value="Dibatalkan">Dibatalkan</option>
             </select>
           </div>
 
-          <div className="flex gap-2">
+          <div className="lg:col-span-3">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
+              Pencarian
+            </label>
+            <input
+              type="text"
+              placeholder="Cari perihal / nomor..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 placeholder-gray-400"
+            />
+          </div>
+
+          <div className="lg:col-span-1 h-[34px]">
             <button
               onClick={resetFilters}
-              className="w-full px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold transition-colors"
+              className="w-full h-full px-4 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold transition-colors"
             >
               Reset Filter
             </button>
@@ -245,9 +290,9 @@ export default function AdminRekapPage() {
                 <th className="py-3.5 px-4">Tanggal Surat</th>
                 <th className="py-3.5 px-4">Pemohon & Bidang</th>
                 <th className="py-3.5 px-4 min-w-[220px]">Perihal / BA</th>
-                <th className="py-3.5 px-4">Klasifikasi</th>
+                <th className="py-3.5 px-4">Tgl Pengajuan</th>
                 <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-right">Aksi</th>
+                <th className="py-3.5 px-4 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-xs text-gray-700 dark:text-gray-300">
@@ -302,8 +347,14 @@ export default function AdminRekapPage() {
                         {item.perihal}
                       </p>
                     </td>
-                    <td className="py-3.5 px-4 whitespace-nowrap font-mono text-xs font-semibold">
-                      {item.nomorTerpakai?.kodeKlasifikasi || item.nomorSurat?.split('/')[0] || '—'}
+                    <td className="py-3.5 px-4 whitespace-nowrap font-medium text-gray-500">
+                      {item.tanggalPengajuan
+                        ? new Date(item.tanggalPengajuan).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })
+                        : '—'}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <span
@@ -321,7 +372,7 @@ export default function AdminRekapPage() {
                         {item.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
                       <button
                         onClick={() => {
                           setSelectedSurat(item);
@@ -336,7 +387,7 @@ export default function AdminRekapPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-gray-400 font-medium">
+                  <td colSpan={7} className="py-12 text-center text-gray-400 font-medium">
                     Tidak ada data rekap yang sesuai filter
                   </td>
                 </tr>

@@ -40,9 +40,6 @@ export function Header() {
     if (pathname.includes('/admin/arsip')) {
       return { title: 'Arsip per Bidang', subtitle: 'Sistem e-Surat DISKOMINFO' };
     }
-    if (pathname.includes('/admin/surat')) {
-      return { title: 'Pengajuan Penomoran', subtitle: 'Sistem e-Surat DISKOMINFO' };
-    }
     if (pathname.includes('/admin/rekap')) {
       return { title: 'Rekap & Laporan', subtitle: 'Sistem e-Surat DISKOMINFO' };
     }
