@@ -68,12 +68,13 @@ export class SuratService {
       },
     });
 
-    // Urutkan kustom sesuai legacy PHP
+    // Urutkan kustom sesuai legacy PHP: status 'Dibatalkan' di paling bawah
     const sorted = list.sort((a, b) => {
       const getPriority = (s: string) => {
-        if (['Selesai', 'Disetujui', 'Ditolak'].includes(s)) return 3;
+        if (s === 'Dibatalkan') return 3;
+        if (['Selesai', 'Disetujui', 'Ditolak'].includes(s)) return 1;
         if (['Diproses', 'Proses', 'Sedang Diproses'].includes(s)) return 2;
-        return 1;
+        return 2;
       };
       const prioA = getPriority(a.status);
       const prioB = getPriority(b.status);
@@ -325,16 +326,19 @@ export class SuratService {
        });
     }
 
-    // Kembalikan stok nomor ke 'tersedia'
-    if (curr.nomorTerpakai?.nomorStokId) {
-       await this.prisma.nomorStok.update({
-         where: { id: curr.nomorTerpakai.nomorStokId },
-         data: { status: 'tersedia' }
-       });
-    }
-
-    // Delete surat (akan cascade ke nomor_terpakai dan status_history)
-    await this.prisma.pengajuanSurat.delete({ where: { id } });
+    // Ubah status menjadi 'Dibatalkan' alih-alih menghapus dari database (Soft Delete)
+    await this.prisma.pengajuanSurat.update({ 
+      where: { id },
+      data: {
+        status: 'Dibatalkan',
+        statusHistory: {
+          create: {
+            status: 'Dibatalkan',
+            keterangan: 'Surat ini telah dibatalkan / dihapus',
+          }
+        }
+      }
+    });
     
     await this._logActivity(userId, 'Hapus Pengajuan', `Menghapus pengajuan surat ${nomorSurat ? 'nomor ' + nomorSurat : 'perihal: ' + curr.perihal}`);
     
