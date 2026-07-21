@@ -27,32 +27,35 @@ export declare class SuratController {
         } | null;
         statusHistory: {
             id: number;
-            createdAt: Date;
-            keterangan: string | null;
             status: string;
+            createdAt: Date;
             pengajuanId: number;
+            keterangan: string | null;
         }[];
         id: number;
-        bidang: string;
-        createdAt: Date;
-        klasifikasi: string | null;
+        userId: number | null;
         pengirim: string;
+        klasifikasiId: number | null;
         kodeKlasifikasi: string | null;
+        klasifikasi: string | null;
         perihal: string;
+        bidang: string;
         lampiran: string | null;
         status: string;
-        klasifikasiId: number | null;
-        userId: number | null;
+        createdAt: Date;
     }[]>;
     getNotifications(req: AuthenticatedRequest): Promise<{
         id: string;
         title: string;
         message: string;
         timestamp: string;
-        type: "pengajuan" | "nomor";
+        type: string;
         read: boolean;
         link: string;
     }[]>;
+    markNotificationsAsRead(req: AuthenticatedRequest): Promise<{
+        success: boolean;
+    }>;
     findOne(id: number): Promise<{
         nomorSurat: string | null;
         tanggalSurat: string;
@@ -68,25 +71,25 @@ export declare class SuratController {
         } | null;
         statusHistory: {
             id: number;
-            createdAt: Date;
-            keterangan: string | null;
             status: string;
+            createdAt: Date;
             pengajuanId: number;
+            keterangan: string | null;
         }[];
         id: number;
-        bidang: string;
-        createdAt: Date;
-        klasifikasi: string | null;
+        userId: number | null;
         pengirim: string;
+        klasifikasiId: number | null;
         kodeKlasifikasi: string | null;
+        klasifikasi: string | null;
         perihal: string;
+        bidang: string;
         lampiran: string | null;
         status: string;
-        klasifikasiId: number | null;
-        userId: number | null;
+        createdAt: Date;
     }>;
     create(body: CreateSuratItemDto, req: AuthenticatedRequest): Promise<{
-        nomorSurat: null;
+        nomorSurat: string;
         tanggalSurat: string;
         tanggalPengajuan: string;
         nomorTerpakai: {
@@ -100,24 +103,24 @@ export declare class SuratController {
         } | null;
         statusHistory: {
             id: number;
-            createdAt: Date;
-            keterangan: string | null;
             status: string;
+            createdAt: Date;
             pengajuanId: number;
+            keterangan: string | null;
         }[];
         id: number;
-        bidang: string;
-        createdAt: Date;
-        klasifikasi: string | null;
+        userId: number | null;
         pengirim: string;
+        klasifikasiId: number | null;
         kodeKlasifikasi: string | null;
+        klasifikasi: string | null;
         perihal: string;
+        bidang: string;
         lampiran: string | null;
         status: string;
-        klasifikasiId: number | null;
-        userId: number | null;
+        createdAt: Date;
     }>;
-    createBatch(body: CreateSuratBatchDto, req: AuthenticatedRequest): Promise<Record<string, unknown>[]>;
+    createBatch(body: CreateSuratBatchDto, req: AuthenticatedRequest): Promise<any[]>;
     updateInfo(id: number, body: UpdateSuratDto, req: AuthenticatedRequest): Promise<{
         nomorSurat: string | null;
         tanggalSurat: string;
@@ -133,22 +136,22 @@ export declare class SuratController {
         } | null;
         statusHistory: {
             id: number;
-            createdAt: Date;
-            keterangan: string | null;
             status: string;
+            createdAt: Date;
             pengajuanId: number;
+            keterangan: string | null;
         }[];
         id: number;
-        bidang: string;
-        createdAt: Date;
-        klasifikasi: string | null;
+        userId: number | null;
         pengirim: string;
+        klasifikasiId: number | null;
         kodeKlasifikasi: string | null;
+        klasifikasi: string | null;
         perihal: string;
+        bidang: string;
         lampiran: string | null;
         status: string;
-        klasifikasiId: number | null;
-        userId: number | null;
+        createdAt: Date;
     }>;
     generateNomor(id: number, body: GenerateNomorDto, req: AuthenticatedRequest): Promise<{
         nomorSurat: string | null;
@@ -165,22 +168,22 @@ export declare class SuratController {
         } | null;
         statusHistory: {
             id: number;
-            createdAt: Date;
-            keterangan: string | null;
             status: string;
+            createdAt: Date;
             pengajuanId: number;
+            keterangan: string | null;
         }[];
         id: number;
-        bidang: string;
-        createdAt: Date;
-        klasifikasi: string | null;
+        userId: number | null;
         pengirim: string;
+        klasifikasiId: number | null;
         kodeKlasifikasi: string | null;
+        klasifikasi: string | null;
         perihal: string;
+        bidang: string;
         lampiran: string | null;
         status: string;
-        klasifikasiId: number | null;
-        userId: number | null;
+        createdAt: Date;
     }>;
     remove(id: number, req: AuthenticatedRequest): Promise<{
         message: string;

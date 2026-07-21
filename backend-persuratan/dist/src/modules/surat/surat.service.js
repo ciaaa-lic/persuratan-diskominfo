@@ -89,75 +89,30 @@ let SuratService = class SuratService {
     }
     async getNotifications(userId, role, bidang) {
         const isAdmin = role === 'ADMIN';
-        const where = isAdmin
-            ? {}
-            : {
-                OR: [
-                    ...(userId ? [{ userId }] : []),
-                    ...(bidang ? [{ bidang }] : []),
-                ],
-            };
-        const list = await this.prisma.pengajuanSurat.findMany({
+        const where = isAdmin ? { user: { role: 'ADMIN' } } : { userId };
+        const list = await this.prisma.notification.findMany({
             where,
-            include: {
-                nomorTerpakai: true,
-            },
-            orderBy: {
-                tanggalPengajuan: 'desc',
-            },
+            orderBy: { createdAt: 'desc' },
             take: 30,
         });
-        const notifications = [];
-        for (const item of list) {
-            if (isAdmin) {
-                if (['Menunggu', 'Belum Selesai', 'Belum Diproses', 'Diproses'].includes(item.status)) {
-                    notifications.push({
-                        id: `admin-sub-${item.id}`,
-                        title: 'Pengajuan Surat Baru',
-                        message: `Bidang ${item.bidang} mengajukan penomoran perihal: "${item.perihal}"`,
-                        timestamp: item.tanggalPengajuan.toISOString(),
-                        type: 'pengajuan',
-                        read: false,
-                        link: `/admin/surat?search=${encodeURIComponent(item.perihal)}`,
-                    });
-                }
-                if (item.nomorTerpakai) {
-                    notifications.push({
-                        id: `admin-num-${item.id}`,
-                        title: 'Nomor Surat Berhasil Diterbitkan',
-                        message: `Nomor ${item.nomorTerpakai.nomorSurat} diberikan untuk pengajuan "${item.perihal}" (${item.bidang})`,
-                        timestamp: item.nomorTerpakai.assignedAt.toISOString(),
-                        type: 'nomor',
-                        read: false,
-                        link: `/admin/arsip?search=${encodeURIComponent(item.nomorTerpakai.nomorSurat)}`,
-                    });
-                }
-            }
-            else {
-                notifications.push({
-                    id: `user-sub-${item.id}`,
-                    title: 'Pengajuan Surat Berhasil Disimpan',
-                    message: `Surat "${item.perihal}" berhasil diajukan dan sedang menunggu verifikasi Admin.`,
-                    timestamp: item.tanggalPengajuan.toISOString(),
-                    type: 'pengajuan',
-                    read: false,
-                    link: `/user/arsip?search=${encodeURIComponent(item.perihal)}`,
-                });
-                if (item.nomorTerpakai) {
-                    notifications.push({
-                        id: `user-num-${item.id}`,
-                        title: 'Nomor Surat Telah Diberikan',
-                        message: `Surat "${item.perihal}" telah diberikan nomor resmi: ${item.nomorTerpakai.nomorSurat}`,
-                        timestamp: item.nomorTerpakai.assignedAt.toISOString(),
-                        type: 'nomor',
-                        read: false,
-                        link: `/user/arsip?search=${encodeURIComponent(item.nomorTerpakai.nomorSurat)}`,
-                    });
-                }
-            }
-        }
-        notifications.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        return notifications.slice(0, 20);
+        return list.map(item => ({
+            id: item.id.toString(),
+            title: item.title,
+            message: item.message,
+            timestamp: item.createdAt.toISOString(),
+            type: item.type,
+            read: item.isRead,
+            link: item.link,
+        }));
+    }
+    async markNotificationsAsRead(userId, role) {
+        const isAdmin = role === 'ADMIN';
+        const where = isAdmin ? { user: { role: 'ADMIN' } } : { userId };
+        await this.prisma.notification.updateMany({
+            where,
+            data: { isRead: true },
+        });
+        return { success: true };
     }
     async findOne(id) {
         const item = await this.prisma.pengajuanSurat.findUnique({
@@ -178,37 +133,102 @@ let SuratService = class SuratService {
             tanggalPengajuan: item.tanggalPengajuan.toISOString(),
         };
     }
+    async _generateNomorInternal(tanggalSurat, kodeKlasifikasi) {
+        const kode = kodeKlasifikasi || '000';
+        const targetDateStr = `${tanggalSurat.getFullYear()}-${String(tanggalSurat.getMonth() + 1).padStart(2, '0')}-${String(tanggalSurat.getDate()).padStart(2, '0')}`;
+        const { stokRow } = await this.stokService.ensureAndGetAvailableStock(targetDateStr);
+        let nomorStokStr = '';
+        let stokId = null;
+        if (stokRow) {
+            await this.prisma.nomorStok.update({
+                where: { id: stokRow.id },
+                data: { status: client_1.NomorStokStatus.terpakai },
+            });
+            nomorStokStr = stokRow.nomorFullStok;
+            stokId = stokRow.id;
+        }
+        else {
+            throw new common_1.BadRequestException('Stok nomor hari ini tidak tersedia');
+        }
+        const monthsRomawi = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+        const monthIndex = tanggalSurat.getMonth();
+        const monthRomawi = monthsRomawi[monthIndex];
+        const year = tanggalSurat.getFullYear();
+        const fullNomor = `${kode}/${nomorStokStr}/DISKOMINFO/${monthRomawi}/${year}`;
+        return { stokId, fullNomor, kode };
+    }
     async create(data, userId) {
         const now = new Date();
+        const tanggalSuratObj = new Date(`${data.tanggalSurat}T00:00:00.000Z`);
+        const { stokId, fullNomor, kode } = await this._generateNomorInternal(tanggalSuratObj, data.kodeKlasifikasi || '000');
         const created = await this.prisma.pengajuanSurat.create({
             data: {
                 userId: userId || null,
                 pengirim: data.pengirim,
                 perihal: data.perihal,
                 bidang: data.bidang,
-                tanggalSurat: new Date(`${data.tanggalSurat}T00:00:00.000Z`),
+                tanggalSurat: tanggalSuratObj,
                 tanggalPengajuan: now,
                 klasifikasi: data.klasifikasi || 'Biasa',
-                kodeKlasifikasi: data.kodeKlasifikasi || null,
+                kodeKlasifikasi: kode,
                 lampiran: data.lampiran || null,
-                status: 'Menunggu',
+                status: 'Selesai',
                 statusHistory: {
-                    create: {
-                        status: 'Pengajuan dibuat',
-                        keterangan: 'Pengajuan surat baru diterima',
-                        createdAt: now,
-                    },
+                    create: [
+                        {
+                            status: 'Pengajuan dibuat',
+                            keterangan: 'Pengajuan surat baru diterima',
+                            createdAt: now,
+                        },
+                        {
+                            status: 'Selesai',
+                            keterangan: fullNomor,
+                            createdAt: new Date(now.getTime() + 1000),
+                        }
+                    ],
                 },
+                nomorTerpakai: {
+                    create: {
+                        nomorStokId: stokId,
+                        nomorSurat: fullNomor,
+                        kodeKlasifikasi: kode,
+                        assignedBy: userId || null,
+                        assignedAt: now,
+                    }
+                }
             },
             include: {
                 nomorTerpakai: true,
                 statusHistory: true,
             },
         });
-        await this._logActivity(userId, 'Buat Surat', `Mengajukan surat baru dengan perihal: ${data.perihal}`);
+        await this._logActivity(userId, 'Buat Surat & Penomoran', `Mengajukan surat baru dan otomatis mendapat nomor: ${fullNomor}`);
+        const admins = await this.prisma.user.findMany({ where: { role: 'ADMIN' } });
+        const notificationsToCreate = [];
+        if (userId) {
+            notificationsToCreate.push({
+                userId,
+                title: 'Nomor Surat Berhasil Diterbitkan',
+                message: `Nomor ${fullNomor} otomatis diberikan untuk pengajuan "${data.perihal}"`,
+                type: 'nomor',
+                link: `/user/arsip?search=${encodeURIComponent(fullNomor)}`,
+            });
+        }
+        for (const admin of admins) {
+            notificationsToCreate.push({
+                userId: admin.id,
+                title: 'Pengajuan Surat Baru & Penomoran Otomatis',
+                message: `Bidang ${data.bidang} membuat surat baru dengan nomor ${fullNomor} perihal: "${data.perihal}"`,
+                type: 'pengajuan',
+                link: `/admin/arsip?search=${encodeURIComponent(fullNomor)}`,
+            });
+        }
+        if (notificationsToCreate.length > 0) {
+            await this.prisma.notification.createMany({ data: notificationsToCreate });
+        }
         return {
             ...created,
-            nomorSurat: null,
+            nomorSurat: fullNomor,
             tanggalSurat: created.tanggalSurat.toISOString().split('T')[0],
             tanggalPengajuan: created.tanggalPengajuan.toISOString(),
         };
@@ -216,49 +236,16 @@ let SuratService = class SuratService {
     async createBatch(batchList, userId) {
         const results = [];
         const now = new Date();
-        for (const item of batchList) {
-            const created = await this.prisma.pengajuanSurat.create({
-                data: {
-                    userId: userId || null,
-                    pengirim: item.pengirim,
-                    perihal: item.perihal,
-                    bidang: item.bidang,
-                    tanggalSurat: new Date(`${item.tanggalSurat}T00:00:00.000Z`),
-                    tanggalPengajuan: now,
-                    klasifikasi: item.klasifikasi || 'Biasa',
-                    kodeKlasifikasi: item.kodeKlasifikasi || null,
-                    lampiran: item.lampiran || null,
-                    status: 'Menunggu',
-                    statusHistory: {
-                        create: {
-                            status: 'Pengajuan dibuat',
-                            keterangan: 'Pengajuan surat baru diterima (Batch)',
-                            createdAt: now,
-                        },
-                    },
-                },
-                include: {
-                    nomorTerpakai: true,
-                    statusHistory: true,
-                },
-            });
-            results.push({
-                ...created,
-                nomorSurat: null,
-                tanggalSurat: created.tanggalSurat.toISOString().split('T')[0],
-                tanggalPengajuan: created.tanggalPengajuan.toISOString(),
-            });
+        for (const data of batchList) {
+            const created = await this.create(data, userId);
+            results.push(created);
         }
-        await this._logActivity(userId, 'Buat Surat Batch', `Mengajukan ${batchList.length} surat baru secara kolektif`);
         return results;
     }
     async updateInfo(id, data, userId) {
         const curr = await this.prisma.pengajuanSurat.findUnique({ where: { id } });
         if (!curr)
             throw new common_1.NotFoundException('Surat tidak ditemukan');
-        if (!['Menunggu', 'Belum Selesai', 'Belum Diproses'].includes(curr.status)) {
-            throw new common_1.ForbiddenException('Surat yang sudah diproses atau selesai tidak dapat diedit');
-        }
         const updateData = {};
         if (data.pengirim !== undefined)
             updateData.pengirim = data.pengirim;
@@ -280,72 +267,39 @@ let SuratService = class SuratService {
         return this.findOne(id);
     }
     async generateNomor(id, kodeKlasifikasi, assignedByUserId) {
-        const curr = await this.prisma.pengajuanSurat.findUnique({ where: { id } });
-        if (!curr)
-            throw new common_1.NotFoundException('Surat tidak ditemukan');
-        const kode = kodeKlasifikasi || '000';
-        const now = new Date();
-        const tglSurat = curr.tanggalSurat;
-        const targetDateStr = `${tglSurat.getFullYear()}-${String(tglSurat.getMonth() + 1).padStart(2, '0')}-${String(tglSurat.getDate()).padStart(2, '0')}`;
-        const { stokRow } = await this.stokService.ensureAndGetAvailableStock(targetDateStr);
-        let nomorStokStr = '';
-        let stokId = null;
-        if (stokRow) {
-            await this.prisma.nomorStok.update({
-                where: { id: stokRow.id },
-                data: { status: client_1.NomorStokStatus.terpakai },
-            });
-            nomorStokStr = stokRow.nomorFullStok;
-            stokId = stokRow.id;
-        }
-        else {
-            throw new common_1.BadRequestException('Stok nomor hari ini tidak tersedia');
-        }
-        const monthsRomawi = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
-        const monthIndex = tglSurat.getMonth();
-        const monthRomawi = monthsRomawi[monthIndex];
-        const year = tglSurat.getFullYear();
-        const fullNomor = `${kode}/${nomorStokStr}/DISKOMINFO/${monthRomawi}/${year}`;
-        await this.prisma.$transaction([
-            this.prisma.pengajuanSurat.update({
-                where: { id },
-                data: {
-                    status: 'Selesai',
-                    kodeKlasifikasi: kode,
-                },
-            }),
-            this.prisma.nomorTerpakai.create({
-                data: {
-                    pengajuanId: id,
-                    nomorStokId: stokId,
-                    nomorSurat: fullNomor,
-                    kodeKlasifikasi: kode,
-                    assignedBy: assignedByUserId || null,
-                    assignedAt: now,
-                },
-            }),
-            this.prisma.statusHistory.create({
-                data: {
-                    pengajuanId: id,
-                    status: 'Nomor surat diterbitkan',
-                    keterangan: fullNomor,
-                    createdAt: now,
-                },
-            }),
-        ]);
-        await this._logActivity(assignedByUserId, 'Beri Nomor', `Memberikan nomor surat ${fullNomor} pada pengajuan ID ${id}`);
         return this.findOne(id);
     }
     async remove(id, userId) {
-        const curr = await this.prisma.pengajuanSurat.findUnique({ where: { id } });
+        const curr = await this.prisma.pengajuanSurat.findUnique({
+            where: { id },
+            include: { nomorTerpakai: true }
+        });
         if (!curr)
             throw new common_1.NotFoundException('Surat tidak ditemukan');
-        if (!['Menunggu', 'Belum Selesai', 'Belum Diproses'].includes(curr.status)) {
-            throw new common_1.ForbiddenException('Surat yang sudah diproses atau selesai tidak dapat dibatalkan');
+        const userObj = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (userObj?.role !== 'ADMIN' && curr.userId !== userId) {
+            throw new common_1.ForbiddenException('Anda hanya dapat menghapus pengajuan surat milik Anda sendiri');
+        }
+        const nomorSurat = curr.nomorTerpakai?.nomorSurat;
+        if (nomorSurat) {
+            await this.prisma.notification.deleteMany({
+                where: { message: { contains: nomorSurat } }
+            });
+        }
+        else {
+            await this.prisma.notification.deleteMany({
+                where: { message: { contains: curr.perihal } }
+            });
+        }
+        if (curr.nomorTerpakai?.nomorStokId) {
+            await this.prisma.nomorStok.update({
+                where: { id: curr.nomorTerpakai.nomorStokId },
+                data: { status: 'tersedia' }
+            });
         }
         await this.prisma.pengajuanSurat.delete({ where: { id } });
-        await this._logActivity(userId, 'Hapus Surat', `Menghapus pengajuan surat ID ${id}`);
-        return { message: 'Pengajuan surat berhasil dibatalkan' };
+        await this._logActivity(userId, 'Hapus Pengajuan', `Menghapus pengajuan surat ${nomorSurat ? 'nomor ' + nomorSurat : 'perihal: ' + curr.perihal}`);
+        return { message: 'Pengajuan surat berhasil dihapus' };
     }
 };
 exports.SuratService = SuratService;

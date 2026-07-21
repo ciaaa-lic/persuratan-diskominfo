@@ -28,32 +28,35 @@ export declare class SuratService {
         } | null;
         statusHistory: {
             id: number;
-            createdAt: Date;
-            keterangan: string | null;
             status: string;
+            createdAt: Date;
             pengajuanId: number;
+            keterangan: string | null;
         }[];
         id: number;
-        bidang: string;
-        createdAt: Date;
-        klasifikasi: string | null;
+        userId: number | null;
         pengirim: string;
+        klasifikasiId: number | null;
         kodeKlasifikasi: string | null;
+        klasifikasi: string | null;
         perihal: string;
+        bidang: string;
         lampiran: string | null;
         status: string;
-        klasifikasiId: number | null;
-        userId: number | null;
+        createdAt: Date;
     }[]>;
     getNotifications(userId?: number, role?: string, bidang?: string): Promise<{
         id: string;
         title: string;
         message: string;
         timestamp: string;
-        type: "pengajuan" | "nomor";
+        type: string;
         read: boolean;
         link: string;
     }[]>;
+    markNotificationsAsRead(userId?: number, role?: string): Promise<{
+        success: boolean;
+    }>;
     findOne(id: number): Promise<{
         nomorSurat: string | null;
         tanggalSurat: string;
@@ -69,25 +72,26 @@ export declare class SuratService {
         } | null;
         statusHistory: {
             id: number;
-            createdAt: Date;
-            keterangan: string | null;
             status: string;
+            createdAt: Date;
             pengajuanId: number;
+            keterangan: string | null;
         }[];
         id: number;
-        bidang: string;
-        createdAt: Date;
-        klasifikasi: string | null;
+        userId: number | null;
         pengirim: string;
+        klasifikasiId: number | null;
         kodeKlasifikasi: string | null;
+        klasifikasi: string | null;
         perihal: string;
+        bidang: string;
         lampiran: string | null;
         status: string;
-        klasifikasiId: number | null;
-        userId: number | null;
+        createdAt: Date;
     }>;
+    private _generateNomorInternal;
     create(data: CreateSuratItemDto, userId?: number): Promise<{
-        nomorSurat: null;
+        nomorSurat: string;
         tanggalSurat: string;
         tanggalPengajuan: string;
         nomorTerpakai: {
@@ -101,24 +105,24 @@ export declare class SuratService {
         } | null;
         statusHistory: {
             id: number;
-            createdAt: Date;
-            keterangan: string | null;
             status: string;
+            createdAt: Date;
             pengajuanId: number;
+            keterangan: string | null;
         }[];
         id: number;
-        bidang: string;
-        createdAt: Date;
-        klasifikasi: string | null;
+        userId: number | null;
         pengirim: string;
+        klasifikasiId: number | null;
         kodeKlasifikasi: string | null;
+        klasifikasi: string | null;
         perihal: string;
+        bidang: string;
         lampiran: string | null;
         status: string;
-        klasifikasiId: number | null;
-        userId: number | null;
+        createdAt: Date;
     }>;
-    createBatch(batchList: CreateSuratItemDto[], userId?: number): Promise<Record<string, unknown>[]>;
+    createBatch(batchList: CreateSuratItemDto[], userId?: number): Promise<any[]>;
     updateInfo(id: number, data: UpdateSuratDto, userId?: number): Promise<{
         nomorSurat: string | null;
         tanggalSurat: string;
@@ -134,22 +138,22 @@ export declare class SuratService {
         } | null;
         statusHistory: {
             id: number;
-            createdAt: Date;
-            keterangan: string | null;
             status: string;
+            createdAt: Date;
             pengajuanId: number;
+            keterangan: string | null;
         }[];
         id: number;
-        bidang: string;
-        createdAt: Date;
-        klasifikasi: string | null;
+        userId: number | null;
         pengirim: string;
+        klasifikasiId: number | null;
         kodeKlasifikasi: string | null;
+        klasifikasi: string | null;
         perihal: string;
+        bidang: string;
         lampiran: string | null;
         status: string;
-        klasifikasiId: number | null;
-        userId: number | null;
+        createdAt: Date;
     }>;
     generateNomor(id: number, kodeKlasifikasi: string, assignedByUserId?: number): Promise<{
         nomorSurat: string | null;
@@ -166,22 +170,22 @@ export declare class SuratService {
         } | null;
         statusHistory: {
             id: number;
-            createdAt: Date;
-            keterangan: string | null;
             status: string;
+            createdAt: Date;
             pengajuanId: number;
+            keterangan: string | null;
         }[];
         id: number;
-        bidang: string;
-        createdAt: Date;
-        klasifikasi: string | null;
+        userId: number | null;
         pengirim: string;
+        klasifikasiId: number | null;
         kodeKlasifikasi: string | null;
+        klasifikasi: string | null;
         perihal: string;
+        bidang: string;
         lampiran: string | null;
         status: string;
-        klasifikasiId: number | null;
-        userId: number | null;
+        createdAt: Date;
     }>;
     remove(id: number, userId?: number): Promise<{
         message: string;

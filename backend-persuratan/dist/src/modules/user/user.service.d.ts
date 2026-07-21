@@ -8,7 +8,7 @@ export declare class UserService {
         email: string;
         password: string;
         name: string;
-        role: import(".prisma/client").$Enums.Role;
+        role: string;
         bidang: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -18,7 +18,7 @@ export declare class UserService {
         email: string;
         password: string;
         name: string;
-        role: import(".prisma/client").$Enums.Role;
+        role: string;
         bidang: string | null;
         createdAt: Date;
         updatedAt: Date;

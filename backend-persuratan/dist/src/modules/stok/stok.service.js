@@ -92,7 +92,10 @@ let StokService = class StokService {
                 urutan: { gte: startNum, lte: endNum },
                 status: client_1.NomorStokStatus.tersedia,
             },
-            orderBy: { id: 'asc' },
+            orderBy: [
+                { urutan: 'asc' },
+                { suffix: 'asc' }
+            ],
         });
         if (!stokRow) {
             const lastSuffRow = await this.prisma.nomorStok.findFirst({
@@ -134,7 +137,10 @@ let StokService = class StokService {
                     urutan: { gte: startNum, lte: endNum },
                     status: client_1.NomorStokStatus.tersedia,
                 },
-                orderBy: { id: 'asc' },
+                orderBy: [
+                    { urutan: 'asc' },
+                    { suffix: 'asc' }
+                ],
             });
         }
         return {

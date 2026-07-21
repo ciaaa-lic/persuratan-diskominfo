@@ -67,6 +67,9 @@ let SuratController = class SuratController {
     async getNotifications(req) {
         return this.suratService.getNotifications(req.user?.userId, req.user?.role, req.user?.bidang);
     }
+    async markNotificationsAsRead(req) {
+        return this.suratService.markNotificationsAsRead(req.user?.userId, req.user?.role);
+    }
     async findOne(id) {
         return this.suratService.findOne(id);
     }
@@ -119,6 +122,15 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], SuratController.prototype, "getNotifications", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Patch)('notifications/read'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], SuratController.prototype, "markNotificationsAsRead", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
