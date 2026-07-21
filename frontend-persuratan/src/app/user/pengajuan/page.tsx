@@ -287,20 +287,32 @@ export default function PengajuanSuratPage() {
                     <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
                       Lampiran Dokumen <span className="text-xs font-normal text-gray-400">(Opsional)</span>
                     </label>
-                    <input
-                      type="file"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          if (e.target.files[0].size > 5 * 1024 * 1024) {
-                            Swal.fire('File Terlalu Besar', 'Maksimal 5MB.', 'warning');
-                            return;
+                    <div className="flex items-center gap-3">
+                      <input
+                        key={item.file ? 'has-file' : 'empty-file'}
+                        type="file"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            if (e.target.files[0].size > 5 * 1024 * 1024) {
+                              Swal.fire('File Terlalu Besar', 'Maksimal 5MB.', 'warning');
+                              return;
+                            }
+                            handleItemChange(index, 'file', e.target.files[0]);
                           }
-                          handleItemChange(index, 'file', e.target.files[0]);
-                        }
-                      }}
-                      accept=".pdf,.doc,.docx"
-                      className="block w-full text-xs text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-red-50 file:text-red-700 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 cursor-pointer"
-                    />
+                        }}
+                        accept=".pdf,.doc,.docx"
+                        className="block w-full text-xs text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-red-50 file:text-red-700 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 cursor-pointer"
+                      />
+                      {item.file && (
+                        <button
+                          type="button"
+                          onClick={() => handleItemChange(index, 'file', undefined)}
+                          className="px-3 py-2 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/60 transition-colors whitespace-nowrap border border-red-100 dark:border-red-900/60"
+                        >
+                          Hapus File
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
