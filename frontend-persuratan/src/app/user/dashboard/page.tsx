@@ -109,36 +109,7 @@ export default function UserDashboardPage() {
         </div>
       </div>
 
-      {/* 2. SOP BANNER HARIAN BIDANG */}
-      <div className="bg-gradient-to-r from-[#380404] via-[#5c0a0a] to-[#380404] rounded-2xl p-6 text-white shadow-xl border border-red-900/40 relative overflow-hidden flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-red-600/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="space-y-2 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/30 border border-red-500/40 text-[11px] font-bold uppercase tracking-wider text-red-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>SOP Penomoran Resmi Tersinkronisasi • Bidang {user?.bidang || 'DISKOMINFO'}</span>
-          </div>
-          <h2 className="text-lg sm:text-xl font-black tracking-tight text-white">
-            Penerbitan Nomor Surat Resmi Otomatis & Terintegrasi Buku Agenda
-          </h2>
-          <p className="text-xs sm:text-sm text-red-100/80 font-light max-w-3xl leading-relaxed">
-            Seluruh nomor surat keluar bidang Anda mengikuti format baku Surat Edaran Sekretaris Daerah Kota Makassar dan Klasifikasi Arsip Nasional (ANRI). Setiap pengajuan diverifikasi dan diterbitkan secara akurat dan terintegrasi pada jam kerja operasional.
-          </p>
-        </div>
-        <div className="flex-shrink-0 relative z-10 flex flex-col sm:flex-row md:flex-col gap-2.5">
-          <Link
-            href="/user/pengajuan"
-            className="px-4 py-2.5 rounded-xl bg-white text-red-950 hover:bg-red-50 font-extrabold text-xs shadow-md text-center transition-all"
-          >
-            + Buat Pengajuan Sekarang
-          </Link>
-          <Link
-            href="/user/arsip"
-            className="px-4 py-2 rounded-xl bg-red-950/60 hover:bg-red-950/90 text-red-200 font-bold text-xs border border-red-800/60 text-center transition-all"
-          >
-            Lihat Arsip Bidang &rarr;
-          </Link>
-        </div>
-      </div>
+
 
       {/* 3. 3 MINI INFO CARDS SOP */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -240,63 +211,7 @@ export default function UserDashboardPage() {
         </div>
       </div>
 
-      {/* 5. MONITORING BLOK NOMOR HARIAN BIDANG */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100 dark:border-gray-800">
-          <div>
-            <h3 className="text-base font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-              <span>Monitoring Ketersediaan Blok Nomor Harian ({user?.bidang || 'Bidang'})</span>
-            </h3>
-            <p className="text-xs text-gray-500 mt-0.5 font-light">
-              Alokasi kuota penomoran otomatis hari ini berdasarkan rotasi bidang dinas
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-              Blok Nomor Tersedia: 100/100
-            </span>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-5">
-          <div>
-            <div className="flex justify-between text-xs font-bold mb-1.5">
-              <span className="text-gray-700 dark:text-gray-300">Blok Penomoran {user?.bidang || 'APTIKA'}</span>
-              <span className="text-red-600 font-mono">{doneCount} terpakai</span>
-            </div>
-            <div className="w-full bg-gray-100 dark:bg-gray-800 h-2.5 rounded-full overflow-hidden">
-              <div
-                className="bg-red-600 h-2.5 rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(100, Math.max(10, doneCount * 15))}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-gray-400 mt-1 font-light">Prioritas penomoran cepat sesuai jam operasional</p>
-          </div>
-
-          <div>
-            <div className="flex justify-between text-xs font-bold mb-1.5">
-              <span className="text-gray-700 dark:text-gray-300">Sinkronisasi Klasifikasi ANRI</span>
-              <span className="text-emerald-600 font-mono">100% Cocok</span>
-            </div>
-            <div className="w-full bg-gray-100 dark:bg-gray-800 h-2.5 rounded-full overflow-hidden">
-              <div className="bg-emerald-500 h-2.5 rounded-full w-full transition-all duration-500" />
-            </div>
-            <p className="text-[11px] text-gray-400 mt-1 font-light">234 Kode resmi terhubung dengan database</p>
-          </div>
-
-          <div>
-            <div className="flex justify-between text-xs font-bold mb-1.5">
-              <span className="text-gray-700 dark:text-gray-300">Integritas Buku Agenda</span>
-              <span className="text-blue-600 font-mono">Real-time</span>
-            </div>
-            <div className="w-full bg-gray-100 dark:bg-gray-800 h-2.5 rounded-full overflow-hidden">
-              <div className="bg-blue-600 h-2.5 rounded-full w-full transition-all duration-500" />
-            </div>
-            <p className="text-[11px] text-gray-400 mt-1 font-light">Nomor langsung terdaftar di sistem pusat</p>
-          </div>
-        </div>
-      </div>
 
       {/* 6. TABEL DATA PENGAJUAN DENGAN FILTER TABS & SEARCH */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
@@ -470,68 +385,7 @@ export default function UserDashboardPage() {
         </div>
       </div>
 
-      {/* 7. LOG AKTIVITAS & RIWAYAT PENOMORAN TERBARU */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800">
-            <div>
-              <h3 className="font-extrabold text-sm text-gray-900 dark:text-white">Aktivitas Surat Keluar Terbaru</h3>
-              <p className="text-[11px] text-gray-400">Jejak aktivitas pengajuan surat dari bidang Anda</p>
-            </div>
-            <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-          </div>
 
-          <div className="space-y-4">
-            {mySuratList && mySuratList.slice(0, 3).map((s, idx) => (
-              <div key={s.id || idx} className="flex items-start gap-3.5 text-xs">
-                <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
-                  {idx + 1}
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-gray-800 dark:text-gray-200 leading-snug">{s.perihal}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
-                    {s.nomorSurat ? `Nomor: ${s.nomorSurat} • Selesai` : 'Status: Menunggu verifikasi admin'}
-                  </p>
-                </div>
-                <span className="text-[10px] font-mono text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">
-                  {s.tanggalPengajuan ? new Date(s.tanggalPengajuan).toLocaleDateString('id-ID') : 'Hari Ini'}
-                </span>
-              </div>
-            ))}
-            {(!mySuratList || mySuratList.length === 0) && (
-              <p className="text-xs text-gray-400 italic text-center py-4">Belum ada aktivitas surat tercatat.</p>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-gray-900 to-[#280202] rounded-2xl p-6 text-white shadow-lg space-y-4 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-red-400">Bantuan & Layanan Cepat</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-red-600/30 text-red-300 text-[10px] font-extrabold border border-red-500/30">
-                Hubungi Sekretariat
-              </span>
-            </div>
-            <h3 className="text-lg font-black mt-2">Perlu percepatan nomor atau pembaruan klasifikasi ANRI?</h3>
-            <p className="text-xs text-gray-300 mt-1 font-light leading-relaxed">
-              Tim admin persuratan DISKOMINFO siap membantu penerbitan nomor surat darurat, undangan mendesak pimpinan, atau koordinasi arsip statis.
-            </p>
-          </div>
-
-          <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-            <div className="text-xs">
-              <p className="font-bold text-white">Sekretariat DISKOMINFO</p>
-              <p className="text-[11px] text-gray-400">Ext: 104 • email: aptika@diskominfo.go.id</p>
-            </div>
-            <Link
-              href="/user/arsip"
-              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs shadow-md transition-all"
-            >
-              Buka Katalog Arsip
-            </Link>
-          </div>
-        </div>
-      </div>
 
       {/* Detail Modal */}
       <SuratDetailModal

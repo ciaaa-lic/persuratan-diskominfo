@@ -27,7 +27,7 @@ export interface PengajuanSurat {
     id: number;
     status: string;
     keterangan?: string;
-    changedAt: string;
+    createdAt: string;
   }[];
 }
 
@@ -153,30 +153,21 @@ export const useGetNotifications = () => {
     queryFn: async () => {
       const response = await api.get<NotificationItem[]>('/surat/notifications');
       const resData = response.data as any;
-      let data = (resData?.data || resData || []) as NotificationItem[];
-      
-      // Update read status from local storage
-      if (typeof window !== 'undefined') {
-        const userId = useAuthStore.getState().user?.id;
-        const storageKey = userId ? `read_notifications_${userId}` : 'read_notifications';
-        const readNotifs = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        data = data.map(item => ({
-          ...item,
-          read: readNotifs.includes(item.id)
-        }));
-      }
-      return data;
+      return (resData?.data || resData || []) as NotificationItem[];
     },
-    refetchInterval: 5000, // Refresh otomatis tiap 5 detik
+    refetchInterval: 5000,
   });
 };
 
-export const markNotificationsAsRead = (ids: string[]) => {
-  if (typeof window !== 'undefined' && ids.length > 0) {
-    const userId = useAuthStore.getState().user?.id;
-    const storageKey = userId ? `read_notifications_${userId}` : 'read_notifications';
-    const readNotifs = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    const newReadNotifs = Array.from(new Set([...readNotifs, ...ids]));
-    localStorage.setItem(storageKey, JSON.stringify(newReadNotifs));
-  }
+export const useMarkNotificationsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.patch('/surat/notifications/read');
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
 };
