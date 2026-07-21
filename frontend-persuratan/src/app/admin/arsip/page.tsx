@@ -141,7 +141,6 @@ export default function AdminArsipPage() {
                 <th className="py-3.5 px-4">Nomor Surat Resmi</th>
                 <th className="py-3.5 px-4">Pengirim / Pemohon</th>
                 <th className="py-3.5 px-4 min-w-[220px]">Perihal / Berita Acara (BA)</th>
-                <th className="py-3.5 px-4">Klasifikasi</th>
                 <th className="py-3.5 px-4">Tgl Surat</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-4 text-right">Aksi</th>
@@ -150,7 +149,7 @@ export default function AdminArsipPage() {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-xs text-gray-700 dark:text-gray-300">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-gray-400 font-medium">
+                  <td colSpan={7} className="py-12 text-center text-gray-400 font-medium">
                     Memuat arsip digital bidang {selectedBidang}...
                   </td>
                 </tr>
@@ -200,11 +199,7 @@ export default function AdminArsipPage() {
                         </a>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 font-semibold text-gray-700 dark:text-gray-300 text-[11px]">
-                        {item.klasifikasi || 'Biasa'}
-                      </span>
-                    </td>
+
                     <td className="py-3.5 px-4 whitespace-nowrap font-medium">
                       {item.tanggalSurat
                         ? new Date(item.tanggalSurat).toLocaleDateString('id-ID', {
@@ -235,7 +230,7 @@ export default function AdminArsipPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-gray-400 font-medium">
+                  <td colSpan={7} className="py-12 text-center text-gray-400 font-medium">
                     Belum ada arsip surat untuk bidang {selectedBidang}
                   </td>
                 </tr>
