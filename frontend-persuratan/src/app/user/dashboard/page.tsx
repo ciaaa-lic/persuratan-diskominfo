@@ -273,6 +273,7 @@ export default function UserDashboardPage() {
               <tr className="border-b border-gray-100 dark:border-gray-800 text-[11px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50/80 dark:bg-gray-800/80">
                 <th className="py-3 px-4">No</th>
                 <th className="py-3 px-4">Tanggal Pengajuan</th>
+                <th className="py-3 px-4">Tanggal Surat</th>
                 <th className="py-3 px-4">Perihal Surat</th>
                 <th className="py-3 px-4">Nomor Surat Resmi</th>
                 <th className="py-3 px-4">Status Verifikasi</th>
@@ -282,7 +283,7 @@ export default function UserDashboardPage() {
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800 text-xs text-gray-700 dark:text-gray-300">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-gray-400 font-medium">
+                  <td colSpan={7} className="py-16 text-center text-gray-400 font-medium">
                     Memuat riwayat surat Anda dari server...
                   </td>
                 </tr>
@@ -293,9 +294,18 @@ export default function UserDashboardPage() {
                     className="hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition-colors"
                   >
                     <td className="py-4 px-4 font-mono text-gray-400 font-bold">{index + 1}</td>
-                    <td className="py-4 px-4 whitespace-nowrap font-medium">
+                    <td className="py-4 px-4 whitespace-nowrap font-medium text-gray-900 dark:text-white">
                       {item.tanggalPengajuan
                         ? new Date(item.tanggalPengajuan).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })
+                        : '—'}
+                    </td>
+                    <td className="py-4 px-4 whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                      {item.tanggalSurat
+                        ? new Date(item.tanggalSurat).toLocaleDateString('id-ID', {
                             day: 'numeric',
                             month: 'short',
                             year: 'numeric',
@@ -361,7 +371,7 @@ export default function UserDashboardPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-gray-400 font-medium">
+                  <td colSpan={7} className="py-16 text-center text-gray-400 font-medium">
                     Tidak ada pengajuan surat yang sesuai dengan kriteria filter tab atau pencarian Anda.
                   </td>
                 </tr>
